@@ -1,5 +1,6 @@
 <template>
   <div id="homepage">
+		<loading :loading-status="loadingStatus"></loading>
     <header class="homepage-banner">
       <img :src="headerIMG">
     </header>
@@ -64,6 +65,7 @@
 <script>
 	import datepicker from "../components/datePicker"
 	import bombbox from '../components/bombBox'
+	import loading from '../components/loading'
 
 	export default {
 		data () {
@@ -80,13 +82,14 @@
 				checkedDateList: [],
 				active: false,
 				msg: '',
+				loadingStatus: true,
 				headerIMG: require('../images/header.jpg'),
 				introIMG: require('../images/intro.jpg')
 			}
 		},
 
 		components: {
-			datepicker, bombbox
+			datepicker, bombbox, loading
 		},
 
 		methods: {
@@ -134,6 +137,11 @@
 
 					this.dateList.push(obj)
 				}
+
+				let _this = this
+				setTimeout( () => {
+					_this.loadingStatus = false
+				}, 3000);
 			},
 
 			onBombBoxChange () {
@@ -295,6 +303,21 @@
 					background: #f5f5f5;
 				}
 			}
+		}
+
+		i.envelop{
+			background: url(../images/icon_envelop.png) no-repeat;
+			background-size: 100% 100%;
+		}
+
+		i.cart{
+			background: url(../images/icon_cart.png) no-repeat;
+			background-size: 100% 100%;
+		}
+
+		.tqb-city-picker-label:after {
+			background: url(../images/icon_right_yel.png) no-repeat;
+			background-size: 100% 100%;
 		}
 	}
 </style>

@@ -116,18 +116,6 @@ li{
 	width: 1.25rem;
 	height: 1.25rem;
 	vertical-align: bottom;
-	background: url(../images/icon_date.png) no-repeat;
-	background-size: 100% 100%;
-}
-
-#buy h4 i.envelop{
-	background: url(../images/icon_envelop.png) no-repeat;
-	background-size: 100% 100%;
-}
-
-#buy h4 i.cart{
-	background: url(../images/icon_cart.png) no-repeat;
-	background-size: 100% 100%;
 }
 
 #buy .header-help {
@@ -182,8 +170,6 @@ li{
 	height: 11px;
 	display: inline-block;
 	margin-left: .8rem;
-	background: url(../images/icon_right_yel.png) no-repeat;
-	background-size: 100% 100%;
 }
 
 #buy .form-group {
