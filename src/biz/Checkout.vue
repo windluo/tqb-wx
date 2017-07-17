@@ -66,6 +66,14 @@
           _this.$router.push({path: '/receipt', query: {result: '1'}});
         }, 2000)
       }
+    },
+
+    mounted () {
+      setTimeout( () => {
+        $("#loading-container").remove()
+      }, 3000)
+
+      document.title = '确认订单'
     }
   }
 </script>

@@ -19,7 +19,7 @@ let ExtractTextPlugin = require("extract-text-webpack-plugin");
 function getDefaultModules() {
     return {
         loaders: [
-            {
+            { 
                 test: /\.vue?$/, 
                 loader: "vue"
             },
@@ -44,30 +44,54 @@ function getDefaultModules() {
 }
 
 function getEntries(env){
-    const jsSrc = srcPath+'/entry';
-    var files = fs.readdirSync(jsSrc);
+    // const jsSrc = srcPath + '/entry';
+    // var files = fs.readdirSync(jsSrc);
 
-    var regexp = /(.*)\.js$/;
-    var map = {};
+    // var regexp = /(.*)\.js$/;
+    // var map = {};
 
-    files.forEach((file)=>{
-        var matchfile = file.match(regexp);
+    // files.forEach((file)=>{
+    //     var matchfile = file.match(regexp);
 
-        if( matchfile ){
-            if ( env === 'dev' ) {
-                map[matchfile[1]] = [
-                    'webpack-dev-server/client?http://127.0.0.1:' + dfltPort,
-                    'webpack/hot/dev-server',
-                    path.resolve(__dirname,jsSrc+"/"+matchfile[0])
-                ];
-            } else {
-                map[matchfile[1]] = path.resolve(__dirname,jsSrc+"/"+matchfile[0]);
-            }
+    //     if( matchfile ){
+    //         if ( env === 'dev' ) {
+    //             map[matchfile[1]] = [
+    //                 'webpack-dev-server/client?http://127.0.0.1:' + dfltPort,
+    //                 'webpack/hot/dev-server',
+    //                 path.resolve(__dirname, jsSrc + "/" + matchfile[0])
+    //             ];
+    //         } else {
+    //             map[matchfile[1]] = path.resolve(__dirname, jsSrc + "/" + matchfile[0]);
+    //         }
+    //     }
+
+    // });
+
+    // return map;
+    /***
+     *上面是多页面应用打包时配置，自动化读取入口个js
+     *下面是单页面应用打包时配置，入口文件只有一个
+     *其他公用框架抽取到vendor 
+    ***/
+    let map = {}
+
+    if ( env === 'dev') {
+        map = {
+            main: [
+                'webpack-dev-server/client?http://127.0.0.1:' + dfltPort,
+                'webpack/hot/dev-server',
+                path.resolve(__dirname, srcPath + "/main.js")
+            ],
+            vendor: ['vue', 'vue-router']
         }
+    } else {
+         map = {
+            main: path.resolve(__dirname, srcPath + "/main.js"),
+            vendor: ['vue', 'vue-router']
+        }
+    }
 
-    });
-
-    return map;
+    return map
 }
 
 module.exports = {

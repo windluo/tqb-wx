@@ -1,5 +1,5 @@
 <template>
-  <div id="loading-container" v-if="loadingStatus">
+  <div id="loading-container">
     <div id="loading">
       <p>加载中，请稍候</p>
       <div class="sk-wave">

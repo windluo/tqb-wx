@@ -1,13 +1,12 @@
 <template>
   <div id="homepage">
-		<loading :loading-status="loadingStatus"></loading>
     <header class="homepage-banner">
       <img :src="headerIMG">
     </header>
 		<form id="buy" @submit.prevent="checkout">
       <div class="form-group">
         <input name="city" type="hidden" id="city" class="tqb-city-picker-input" @change="onCityChange">
-        <label for="city" :data-url="api + 'getCitys'" data-hot="9" onclick="" class="tqb-city-picker-label">{{city}}</label>
+        <label for="city" :data-url="api + 'getCitys'" data-hot="9" onclick="" class="tqb-city-picker-label">{{initData.defaultCityName}}</label>
       </div>
       <datepicker :date-list = "dateList" :on-date-change="onDateChange"></datepicker>
 			<div class="header-help">
@@ -16,20 +15,28 @@
       </div>
 			
 			<div class="subsidy-info">
-				<p class="subsidy-header"><span class="big">35°</span><span>C</span>起赔，最高补贴金额<span class="big">20</span><span>/天</span></p>
-				<ul class="subsidy-list">
-					<li class="subsidy-item header">触发标准</li>
-					<li class="subsidy-item header">赔偿金额</li>
-					<li class="subsidy-item">35℃</li>
-					<li class="subsidy-item">￥0.8/天</li>
-					<li class="subsidy-item">36℃</li>
-					<li class="subsidy-item">￥1.8/天</li>
-					<li class="subsidy-item">37℃</li>
-					<li class="subsidy-item">￥15/天</li>
-				</ul>
+				<p class="subsidy-header"><span class="big">35°</span><span>C</span>起赔，最高补贴金额<small>￥</small><span class="big">20</span><span>/天</span></p>
+				<table class="subsidy-table">
+					<tr>
+						<th>触发标准</th>
+						<th>赔偿金额</th>
+					</tr>
+					<tr>
+						<td>35℃</td>
+						<td>￥0.8/天</td>
+					</tr>
+					<tr>
+						<td>36℃</td>
+						<td>￥1.8/天</td>
+					</tr>
+					<tr>
+						<td>37℃</td>
+						<td>￥15/天</td>
+					</tr>
+				</table>
 				<p class="help-block text-muted">
-					以达到最高档为准<br>
-          最终天气实测值以中国气象局{{city}}气象站（编号{{city_id}}）为准。
+					高温补贴金额根据保障地当日最高气温达到的最高标准计算，气温数据
+          以中国气象局{{initData.defaultCityName}}气象站（编号{{initData.defaultCityId}}）的温度实测值为准。
         </p>
 			</div>
       <h4 class="buy-info"><i class="cart"></i> 购买人信息</h4>
@@ -65,31 +72,30 @@
 <script>
 	import datepicker from "../components/datePicker"
 	import bombbox from '../components/bombBox'
-	import loading from '../components/loading'
+	import Bus from '../libs/bus.js'
 
 	export default {
 		data () {
 			return {
-				api: 'http://test.baotianqi.cn/moji/',
-				city: '深圳',
-				city_id: 'CN59493',
+				api: API,
+				initData: Bus.initData,
 				mobile: '',
 				couponCode: '',
 				total: 0,
 				isFetching: false,
 				isSubmitting: false,
-				dateList: [],
 				checkedDateList: [],
+				dateList: [],
 				active: false,
 				msg: '',
-				loadingStatus: true,
+				subsidyList: [],
 				headerIMG: require('../images/header.jpg'),
 				introIMG: require('../images/intro.jpg')
 			}
 		},
 
 		components: {
-			datepicker, bombbox, loading
+			datepicker, bombbox
 		},
 
 		methods: {
@@ -137,11 +143,6 @@
 
 					this.dateList.push(obj)
 				}
-
-				let _this = this
-				setTimeout( () => {
-					_this.loadingStatus = false
-				}, 3000);
 			},
 
 			onBombBoxChange () {
@@ -191,11 +192,23 @@
 					_this.isSubmitting = false
 					this.$router.push('checkout')
 				}, 2000)
+			},
+
+			getCity () {
+				// axios.get(this.api + 'getCitys')
+				// 	.then((res) => {
+				// 		console.log(res)
+				// 	})
+				// 	.catch((res) => {
+				// 		console.log(res)
+				// 	})
 			}
 		},
 
 		mounted () {
+			document.title = '天气宝'
 			this.createDateList()
+			this.getCity()
 		}
 	}
 </script>
@@ -273,35 +286,33 @@
 
 		.subsidy-info .help-block {
 			font-size: .75rem;
-			margin: .25rem 0 1rem
+			margin: .25rem 0 1.5rem
 		}
 
 		.text-muted {
 			color: #999;
 		}
 
-		.subsidy-list{
-			overflow: hidden;
+		.subsidy-table{
+			width: 100%;
 			border-top: 1px solid #ccc;
 			border-left: 1px solid #ccc;
+			border-collapse: collapse;
 			font-size: 12px;
-			margin-top: 1rem;
+			margin-top: .75rem;
 			margin-bottom: .75rem;
+			line-height: 2.4;
 
-			.subsidy-item{
-				float: left;
-				flex-direction: column;
-				justify-content: center;
-				line-height: 2.4;
-				width: 50%;
-				text-align: center;
-				margin-bottom: 0;
+			th{
+				font-weight: normal;
+				background: #f5f5f5;
 				border-right: 1px solid #ccc;
 				border-bottom: 1px solid #ccc;
-
-				&.header{
-					background: #f5f5f5;
-				}
+			}
+			td{
+				border-right: 1px solid #ccc;
+				border-bottom: 1px solid #ccc;
+				text-align: center;
 			}
 		}
 

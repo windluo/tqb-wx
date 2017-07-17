@@ -1,11 +1,13 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
-import home from '../biz/Homepage.vue'
-import checkout from '../biz/Checkout.vue'
-import receipt from '../biz/receipt.vue'
-import faq from '../biz/Faq.vue'
+import loading from './components/loading'
+import home from './biz/Homepage.vue'
+import checkout from './biz/Checkout.vue'
+import receipt from './biz/receipt.vue'
+import faq from './biz/Faq.vue'
+import Bus from './libs/bus.js'
 
-import "../css/comm.css"
+import "./css/comm.css"
 import 'tqb-component-city-picker/build/css/tqb-city-picker.min.css'
 import 'tqb-component-city-picker/build/js/tqb-city-picker.min.js'
 
@@ -20,7 +22,7 @@ const routes = [
 	{
 		path: '/checkout',
 		name: 'checkout',
-		component: checkout
+		component: checkout 
 	},
 	{
 		path: '/receipt',
@@ -43,6 +45,9 @@ new Vue({
 	data: {
 		transitionName: ''
 	},
+	components: {
+		loading
+	},
 	watch: {
 		'$route' (to, from) {
 			if (to.name === 'faq') {
@@ -61,3 +66,11 @@ new Vue({
 		}
 	}
 }).$mount('#app')
+
+Bus.getInitData()
+	.catch((res) => {
+		console.log(res)
+	})
+	.then((res) =>{
+		$("#loading-container").remove()
+	})

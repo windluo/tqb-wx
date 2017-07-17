@@ -11,6 +11,10 @@
           <a href="#/" class="btn btn-primary" @click="restart">再次购买</a>
           <a href="#/" class="btn btn-primary share-button" @click.prevent="share">分享</a>
         </div>
+        <div id="share-container" v-if="isShare">
+          <div class="share-b"></div>
+          <div class="share" @click="hideShare"></div>
+        </div>
       </div>
       <div v-else>
         <h3 class="error"><i class="icon-cancel-circled-outline"></i> 购买失败</h3>
@@ -55,7 +59,8 @@
         total: '',
         mobile: '18526521454',
         coupon: '',
-        paySuccess: true
+        paySuccess: true,
+        isShare: false
       }
     },
 
@@ -71,16 +76,25 @@
       },
 
       share () {
-        console.log('点击右上角分享')
+        this.isShare = true
+      },
+
+      hideShare () {
+        this.isShare = false
       }
     },
 
     mounted () {
-      console.log(this.$route.query)
+      setTimeout( () => {
+        $("#loading-container").remove()
+      }, 3000)
+
       if (this.$route.query.result == 1) {
         this.paySuccess = true
+        document.title = '购买成功'
       } else {
         this.paySuccess = false
+        document.title = '购买失败'
       }
     }
   }
@@ -148,6 +162,31 @@
     .icon-cancel-circled-outline{
       background: url(../images/icon002.png) no-repeat;
       background-size: 100% 100%;
+    }
+
+    #share-container{
+      width: 100%;
+      height: 100%;
+      position: fixed;
+      top: 0;
+      left: 0;
+      z-index: 999;
+      .share-b{
+        width: 100%;
+        height: 100%;
+        background: #000;
+        opacity: 0.3;
+      }
+      .share{
+        width: 100%;
+        height: 100%;
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 10;
+        background: url(../images/share.png) no-repeat;
+        background-size: 100% 100%;
+      }
     }
   }
 </style>

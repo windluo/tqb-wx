@@ -17,6 +17,10 @@ let config = Object.assign({}, baseConfig, {
         new webpack.NoErrorsPlugin(),
         new BowerWebpackPlugin({
             searchResolveModulesDirectories: false
+        }),
+        new webpack.DefinePlugin({
+            // 'process.env.NODE_ENV': '"production"'
+            API: JSON.stringify('http://testserver.baotianqi.cn/selfTemp/')
         })
     ]),
     module: defaultSettings.getDefaultModules()

@@ -22,7 +22,8 @@ let config = Object.assign({}, baseConfig, {
     plugins: baseConfig.plugins.concat([
         new webpack.optimize.DedupePlugin(),
         new webpack.DefinePlugin({
-            'process.env.NODE_ENV': '"production"'
+            // 'process.env.NODE_ENV': '"production"'
+            API: JSON.stringify('http://server.baotianqi.cn/selfTemp/')
         }),
         new BowerWebpackPlugin({
             searchResolveModulesDirectories: false

@@ -30,6 +30,10 @@ let config = {
             //     target: 'http://120.24.219.112/',
             //     secure: false
             // }
+            '/selfTemp': {
+                target: 'http://192.168.1.170:8081/tqbserver/',
+                secure: false
+            }
         }
     },
     // 转化成es5的语法
@@ -55,9 +59,9 @@ let config = {
             // gl: 'gl',
         }),
     	new webpack.optimize.CommonsChunkPlugin({
-            name: 'vendors', // 将公共模块提取，生成名为`vendors`的chunk
-            chunks: chunks,
-            minChunks: chunks.length // 提取所有entry共同依赖的模块
+            name: 'vendor' // 将公共模块提取，生成名为`vendors`的chunk
+            // chunks: chunks,
+            // minChunks: chunks.length // 提取所有entry共同依赖的模块
         }),
         new ExtractTextPlugin('./css/[name]-[contenthash:8].css')
         // new CopyWebpackPlugin([
@@ -68,10 +72,16 @@ let config = {
 };
 
 chunks.forEach(function(entry){
+    /*
+    ** 多页面应用配置
+    ** template:'src/' + entry + '.html',
+    ** filename: entry + '.html',
+    ** chunks: [entry, 'vendors'],
+    */
 	let conf = {
-        template:'src/'+entry+'.html',
-        filename: entry+'.html',
-        chunks: [entry,'vendors'],
+        template:'src/index.html',
+        filename: 'index.html',
+        chunks: ['main', 'vendor'],
         minify: { //压缩HTML文件
             removeComments: true //移除HTML中的注释
         },

@@ -1,10 +1,5 @@
 <template>
   <div id="faq">
-    <header>
-      <a href="#/"><i class="icon-left"></i></a>
-			<a class="a-close" href="#/">关闭</a>
-      <h3>常见问题</h3>
-    </header>
 		<h3 class="normal">常见问题</h3>
     <dl>
       <dt>赔付方式是什么？</dt>
@@ -33,42 +28,18 @@
   </div>
 </template>
 
+<script>
+	export default {
+		mounted () {
+			document.title = '常见问题'
+			$("#loading-container").remove()
+		}
+	}
+</script>
+
+
 <style lang="less">
   #faq{
-    header {
-			background-color: #333;
-			color: #fff;
-			line-height: 3em;
-			position: relative;
-
-			a {
-				color: #fff;
-				position: absolute;
-				top: 0;
-				left: 0;
-				width: 3rem;
-				height: 100%;
-				text-align: center;
-				text-decoration: none;
-
-				&.a-close{
-					left: 3rem;
-				}
-
-				.icon-left{
-					display: block;
-					width: 100%;
-					height: 100%;
-					background: url(../images/icon_left.png) no-repeat;
-					background-size: 100% 100%;
-				}
-			}
-
-			h3 {
-				margin: 0
-			}
-		}
-
 		h3 {
 			text-align: center;
 			&.normal{

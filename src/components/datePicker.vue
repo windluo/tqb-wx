@@ -12,6 +12,7 @@
 				v-for="(data, $index) in dateList"
 				@click="checkDate($index, data)"
 			>
+				<span class="date-item-first" v-if="$index==0">八月</span>
 				{{data.value}}
 			</li>
 		</ul>
@@ -31,7 +32,6 @@
 				type: Array,
 				default: []
 			},
-
 			onDateChange: {
 				type: Function,
 				default: Promise.resolve()
@@ -85,6 +85,19 @@
 
 				this.onDateChange(result)
 			}
+		},
+
+		watch: {
+			startDate () {
+				let start = new Date(this.startDate).getTime()
+				let end = new Date(this.endDate).getTime()
+				let interval = 24 * 60 * 60 * 1000
+
+				for (let i = this.startDate; i <= this.endDate; i += interval) {
+					let date = new Date(i).getFullYear() + '-' + (new Date(i).getMonth() + 1) + '-' + new Date(i).getDate()
+					console.log(date)
+				}
+			}
 		}
 	}
 </script>
@@ -95,9 +108,9 @@
 			position: relative;
 			.calendar{
 				display: inline-block;
-				width: 1.25rem;
-				height: 1.25rem;
-				vertical-align: bottom;
+				width: 1.2rem;
+				height: 1.2rem;
+				vertical-align: top;
 				background: url(../images/icon_date.png) no-repeat;
 				background-size: 100% 100%;
 			}
@@ -128,10 +141,21 @@
 		.date-list{
 			display: flex;
 			flex-wrap: wrap;
-			margin: 1em 0;
+			margin: 1em 0 1.5em;
 			padding: 0;
 			border-top: 1px solid #f5f5f5;
 			border-left: 1px solid #f5f5f5;
+			position: relative;
+
+			.date-item-first{
+				position: absolute;
+				top: 2px;
+				left: 1px;
+				color: #666;
+				display: inline;
+				line-height: 1;
+				font-size: 0.85rem;
+			}
 		}
 		
 		.date-item{

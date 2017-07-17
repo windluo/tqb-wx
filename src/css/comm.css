@@ -113,9 +113,9 @@ li{
 
 #buy h4 i {
 	display: inline-block;
-	width: 1.25rem;
-	height: 1.25rem;
-	vertical-align: bottom;
+	width: 1.2rem;
+	height: 1.2rem;
+	vertical-align: top;
 }
 
 #buy .header-help {
@@ -244,12 +244,18 @@ li{
 }
 
 .btn {
-	border: 1px solid #ddd;
+	border: none;
 	border-radius: .25rem;
 	display: inline-block;
 	padding: 1rem 1.5rem;
 	text-align: center;
 	text-decoration: none;
+}
+
+.btn.btn-secondary{
+	border: 1px solid #ddd;
+	padding-top: .75rem;
+	padding-bottom: .75rem;
 }
 
 .btn:disabled {
