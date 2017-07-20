@@ -70,8 +70,8 @@
         }
 
         this.isSubmitting = true
-        this.payWxWap()
-        // this.findOpenId()
+        // this.payWxWap()
+        this.findOpenId()
       },
 
       checkOrder () {
@@ -133,6 +133,7 @@
         })
         .then((res) => {
           if (res.data.openid) {
+            alert(res.data.openid)
             this.payWxWap(res.data.openid)
           }
         })
@@ -148,7 +149,7 @@
           method: "GET",
           url: wxpayAPI + "/jsapipay",
           params: {
-            openid: 'opb1Ft61n4QEwe29QyorjApHAnO8',  //'opb1Ft61n4QEwe29QyorjApHAnO8'
+            openid: openid,  //'opb1Ft61n4QEwe29QyorjApHAnO8'
             totalFee: this.total,
             outTradeNo: this.contractId,
             body: "天气宝高温"
