@@ -68,9 +68,3 @@ new Vue({
 }).$mount('#app')
 
 Bus.getInitData()
-	.catch((res) => {
-		console.log(res)
-	})
-	.then((res) =>{
-		$("#loading-container").remove()
-	})

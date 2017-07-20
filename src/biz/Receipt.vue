@@ -81,21 +81,42 @@
 
       hideShare () {
         this.isShare = false
+      },
+
+      checkOrder () {
+        let id = this.$route.query.orderId
+        if (!id) return
+
+        let _this = this
+        $.ajax({
+          url: API + '/findOrder',
+          type: 'POST',
+          dataType: 'JSON',
+          data: JSON.stringify({
+            orderId: id
+          }),
+          success (data) {
+            if (data.state === 1) {
+              _this.paySuccess = true
+              document.title = '购买成功'
+            } else {
+              _this.paySuccess = false
+              document.title = '购买失败'
+            }
+
+            $("#loading-container").remove()
+          },
+          error (res) {
+            _this.paySuccess = false
+            document.title = '购买失败'
+            console.log(res)
+          }
+        })
       }
     },
 
     mounted () {
-      setTimeout( () => {
-        $("#loading-container").remove()
-      }, 3000)
-
-      if (this.$route.query.result == 1) {
-        this.paySuccess = true
-        document.title = '购买成功'
-      } else {
-        this.paySuccess = false
-        document.title = '购买失败'
-      }
+      this.checkOrder()
     }
   }
 </script>

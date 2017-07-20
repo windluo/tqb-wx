@@ -3,7 +3,7 @@
 		<div class="date-header">
 			<i class="calendar"></i>
 			 选择保障日期（可多选）
-			<div class="date-checkall" :class="{checked:checked}" @click="checkAll">全选</div>
+			<div class="date-checkall" :class="{checked:checkeAll}" @click="checkAll">全选</div>
 		</div>
 
 		<ul class="date-list">
@@ -12,26 +12,25 @@
 				v-for="(data, $index) in dateList"
 				@click="checkDate($index, data)"
 			>
-				<span class="date-item-first" v-if="$index==0">八月</span>
-				{{data.value}}
+				<span class="date-item-first" v-if="data.month">{{data.month}}</span>
+				{{data.day}}
 			</li>
 		</ul>
 	</div>
 </template>
 
 <script>
+	import Bus from '../libs/bus'
+
 	export default {
 		data () {
 			return {
-				checked: false
+				checkeAll: Bus.checkeAll,
+				dateList: Bus.dateList
 			}
 		},
 
 		props: {
-			dateList: {
-				type: Array,
-				default: []
-			},
 			onDateChange: {
 				type: Function,
 				default: Promise.resolve()
@@ -40,9 +39,9 @@
 		
 		methods: {
 			checkAll () {
-				this.checked = !this.checked
+				this.checkeAll = Bus.checkeAll = !this.checkeAll
 				
-				if (!this.checked) {
+				if (!this.checkeAll) {
 					this.dateList.forEach( (item, i) =>  {
 						this.dateList[i].checked = false	
 					});
@@ -56,7 +55,9 @@
 			},
 
 			checkDate (index, data) {
-				this.dateList[index].checked = !this.dateList[index].checked
+				let value = this.dateList[index]
+				value.checked = !value.checked
+				this.$set(this.dateList, index, value)
 
 				let len = 0
 				this.dateList.forEach( (item) => {
@@ -66,9 +67,9 @@
 				})
 
 				if (len === this.dateList.length) {
-					this.checked = true
+					this.checkeAll = Bus.checkeAll = true
 				} else {
-					this.checked = false
+					this.checkeAll = Bus.checkeAll = false
 				}
 
 				this.returnCheckedDate()
@@ -79,24 +80,10 @@
 
 				this.dateList.forEach( (item) => {
 					if (item.checked) {
-						result.push(item)
+						result.push(item.value)
 					}
 				})
-
 				this.onDateChange(result)
-			}
-		},
-
-		watch: {
-			startDate () {
-				let start = new Date(this.startDate).getTime()
-				let end = new Date(this.endDate).getTime()
-				let interval = 24 * 60 * 60 * 1000
-
-				for (let i = this.startDate; i <= this.endDate; i += interval) {
-					let date = new Date(i).getFullYear() + '-' + (new Date(i).getMonth() + 1) + '-' + new Date(i).getDate()
-					console.log(date)
-				}
 			}
 		}
 	}
@@ -168,6 +155,7 @@
 			border-right: 1px solid #f5f5f5;
 			border-bottom: 1px solid #f5f5f5;
 			color: #fc6826;
+			position: relative;
 
 			&.checked{
 				color: #fff;

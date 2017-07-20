@@ -8,6 +8,24 @@ let defaultSettings = require('./defaults');
 // Add needed plugins here
 let BowerWebpackPlugin = require('bower-webpack-plugin');
 
+let API = JSON.stringify('http://server.baotianqi.cn/selfTemp')
+let wxpayAPI = JSON.stringify('http://pay.baotianqi.cn/wxpay')
+let wx = JSON.stringify('http://m.baotianqi.cn/wx')
+baseConfig.devServer.proxy = {
+    '/selfTemp': {
+        target: API,
+        secure: false
+    },
+    '/wxpay': {
+        target: wxpayAPI,
+        secure: false
+    },
+    '/wx': {
+        target: wx,
+        secure: false
+    }
+}
+
 let config = Object.assign({}, baseConfig, {
     entry: defaultSettings.entries('dev'),
     cache: true,
@@ -20,7 +38,9 @@ let config = Object.assign({}, baseConfig, {
         }),
         new webpack.DefinePlugin({
             // 'process.env.NODE_ENV': '"production"'
-            API: JSON.stringify('http://testserver.baotianqi.cn/selfTemp/')
+            API: API,
+            wxpayAPI: wxpayAPI,
+            wx: wx
         })
     ]),
     module: defaultSettings.getDefaultModules()

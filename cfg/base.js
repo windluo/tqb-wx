@@ -30,10 +30,6 @@ let config = {
             //     target: 'http://120.24.219.112/',
             //     secure: false
             // }
-            '/selfTemp': {
-                target: 'http://192.168.1.170:8081/tqbserver/',
-                secure: false
-            }
         }
     },
     // 转化成es5的语法

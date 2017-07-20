@@ -6,32 +6,27 @@
 		<form id="buy" @submit.prevent="checkout">
       <div class="form-group">
         <input name="city" type="hidden" id="city" class="tqb-city-picker-input" @change="onCityChange">
-        <label for="city" :data-url="api + 'getCitys'" data-hot="9" onclick="" class="tqb-city-picker-label">{{initData.defaultCityName}}</label>
+        <label for="city" :data-url="api + '/getCitys'" data-hot="9" onclick="" class="tqb-city-picker-label">{{initData.defaultCityName}}</label>
       </div>
-      <datepicker :date-list = "dateList" :on-date-change="onDateChange"></datepicker>
+      <datepicker :on-date-change="onDateChange"></datepicker>
 			<div class="header-help">
         <h4><i class="envelop"></i> 高温补贴标准</h4>
         <a href="#/faq" class="help">?</a>
       </div>
 			
 			<div class="subsidy-info">
-				<p class="subsidy-header"><span class="big">35°</span><span>C</span>起赔，最高补贴金额<small>￥</small><span class="big">20</span><span>/天</span></p>
+				<p class="subsidy-header">
+					<span class="big">{{minTemp}}°</span><span>C</span>起赔，
+					最高补贴金额<small>￥</small><span class="big">{{maxPay | priceConvert}}</span><span>/天</span>
+				</p>
 				<table class="subsidy-table">
 					<tr>
 						<th>触发标准</th>
 						<th>赔偿金额</th>
 					</tr>
-					<tr>
-						<td>35℃</td>
-						<td>￥0.8/天</td>
-					</tr>
-					<tr>
-						<td>36℃</td>
-						<td>￥1.8/天</td>
-					</tr>
-					<tr>
-						<td>37℃</td>
-						<td>￥15/天</td>
+					<tr v-for="data in levels">
+						<td>{{data.threshold}}℃</td>
+						<td>￥{{data.payout | priceConvert}}/天</td>
 					</tr>
 				</table>
 				<p class="help-block text-muted">
@@ -41,12 +36,12 @@
 			</div>
       <h4 class="buy-info"><i class="cart"></i> 购买人信息</h4>
       <div class="form-group">
-        <input type="tel" name="mobile" class="form-control" placeholder="您的手机号码，必填~" id="mobile" @change="onMobileChange" v-model="mobile" maxlength="11">
+        <input type="tel" name="mobile" class="form-control" placeholder="您的手机号码，必填~" id="mobile" v-model="mobile" maxlength="11">
         <label class="required" for="mobile"></label>
       </div>
 			<div class="form-group">
-        <input type="text" name="couponCode" class="form-control" placeholder="优惠码，可不填~" id="couponCode" @change="onCouponCodeChange" v-model="couponCode" maxlength="8">
-        <label class="tips" for="couponCode">优惠码有效，立减5元</label>
+        <input type="text" name="couponCode" class="form-control" placeholder="优惠码，可不填~" @keyup="findCoupons" id="couponCode" v-model="couponCode">
+        <label class="tips" for="couponCode">{{couponStr}}</label>
       </div>
     </form>
 		<div class="how-to-play">
@@ -58,7 +53,7 @@
           <span class="text-muted">计算中...</span>
         </div>
         <div v-else>
-          需支付：<span class="price">{{total}}元</span>
+          需支付：<span class="price">{{total | priceConvert}}元</span>
         </div>
       </div>
       <button form="buy" class="btn btn-primary" :disabled="isFetching || isSubmitting">
@@ -73,24 +68,72 @@
 	import datepicker from "../components/datePicker"
 	import bombbox from '../components/bombBox'
 	import Bus from '../libs/bus.js'
+	import axios from 'axios'
+	import '../libs/utils'
 
 	export default {
 		data () {
 			return {
 				api: API,
-				initData: Bus.initData,
-				mobile: '',
-				couponCode: '',
-				total: 0,
-				isFetching: false,
+				mobile: Bus.mobile,
+				couponCode: Bus.couponCode,
+				couponCodeRight: false,
+				couponStr: '',
 				isSubmitting: false,
-				checkedDateList: [],
-				dateList: [],
+				checkedDateList: Bus.checkedDateList,
 				active: false,
 				msg: '',
 				subsidyList: [],
 				headerIMG: require('../images/header.jpg'),
 				introIMG: require('../images/intro.jpg')
+			}
+		},
+
+		computed: {
+			initData () {
+				return Bus.initData
+			},
+
+			isFetching () {
+				return Bus.isFetching
+			},
+
+			contract () {
+				return Bus.initData.contract || {}
+			},
+
+			levels () {
+				return this.contract.levels || [{}]
+			},
+
+			minTemp () {
+				return this.levels[0].threshold
+			},
+
+			maxPay () {
+				return this.levels[this.levels.length-1].payout
+			},
+
+			total () {
+				return Bus.total
+			},
+
+			couponPrice () {
+				return Bus.couponPrice
+			},
+
+			contractId () {
+				return Bus.contractId
+			}
+		},
+
+		watch: {
+			mobile (val, oldval) {
+				Bus.mobile = val
+			},
+
+			couponCode (val, oldval) {
+				Bus.couponCode = val
 			}
 		},
 
@@ -101,48 +144,69 @@
 		methods: {
 			onCityChange (event) {
 				let cityName = this.$el.querySelector(`[for=${event.target.id}]`).textContent;
-				// this.$store.commit(MutationTypes.SET_CITY, {
-				// 	id: event.target.value,
-				// 	cityName: cityName
-				// });
-
-				this.city = cityName;
-				this.city_id = event.target.value;
+			
+				this.city = Bus.initData.defaultCityName = cityName
+				this.city_id = Bus.initData.defaultCityId = event.target.value
+				Bus.findContract()
 
 				zhuge.track('city', {
 					id: event.target.value
 				});
 			},
 
-			onMobileChange () {
-
-			},
-
-			onCouponCodeChange () {
-
-			},
-
 			onDateChange (date) {
-				this.checkedDateList = date
-
-				//选完日期，去后台计算需支付的价钱
-				this.isFetching = true
-				let _this = this
-				setTimeout(()=> {
-					_this.isFetching = false
-					_this.total = _this.checkedDateList.length * 2
-				}, 2000)
+				this.checkedDateList = Bus.checkedDateList = date
+				Bus.findContract()
 			},
 
-			createDateList () {
-				for (let i = 0; i < 14; i++) {
-					let obj = {
-						checked: false,
-						value: i + 11
-					}
+			findCoupons () {
+				if (!this.mobile) {
+					this.msg = '请填写手机号码'
+					this.active = true
+					return
+				} else {
+					let reg = /^1[34578]\d{9}$/
 
-					this.dateList.push(obj)
+					if (!reg.test(this.mobile)) {
+						this.msg = '请填写正确的手机号码'
+						this.active = true
+						return
+					}
 				}
+
+				if (this.couponCode.length < 5) {
+					return
+				}
+
+				axios({
+					url: API + '/findCoupons',
+					method: 'POST',
+					params: {
+						coupons: this.couponCode,
+						mobile: this.mobile
+					}
+				})
+				.then((res) => {
+					if (res.data.state === 1) {
+						console.log(res.data.data)
+						Bus.couponPrice = res.data.data
+						this.couponStr = `优惠码有效，立减${(Bus.couponPrice/100).toFixed(2)}元`
+						Bus.total -= Bus.couponPrice
+						this.couponCodeRight = true
+					} else {
+						this.couponStr = `优惠码无效`
+						this.couponCodeRight = false
+						Bus.total += Bus.couponPrice
+						Bus.couponPrice = 0
+					}
+				})
+				.catch((res) => {
+					this.couponStr = `优惠码无效`
+					this.couponCodeRight = false
+					Bus.total += Bus.couponPrice
+					Bus.couponPrice = 0
+					console.log(res)
+				})
 			},
 
 			onBombBoxChange () {
@@ -169,46 +233,54 @@
 						return
 					}
 				}
-				if (this.couponCode) {
-					let reg = /^[A-Za-z0-9]{8}$/
+				// if (this.couponCode) {
+				// 	let reg = /^[A-Za-z0-9]{8}$/
 
-					if (!reg.test(this.couponCode)) {
-						this.msg = '请填写正确的优惠码'
-						this.active = true
-						return
-					}
-				}
+				// 	if (!reg.test(this.couponCode)) {
+				// 		this.msg = '请填写正确的优惠码'
+				// 		this.active = true
+				// 		return
+				// 	}
+				// }
 
 				this.isSubmitting = true
-				let data = {
-					date: this.checkedDateList,
-					mobile: this.mobile,
-					couponCode: this.couponCode
-				}
-				console.log(data)
-
 				let _this = this
-				setTimeout(()=> {
-					_this.isSubmitting = false
-					this.$router.push('checkout')
-				}, 2000)
-			},
+				let data = {
+					contractId: _this.contractId,
+					payFee: _this.total,
+					mobile: _this.mobile
+				}
 
-			getCity () {
-				// axios.get(this.api + 'getCitys')
-				// 	.then((res) => {
-				// 		console.log(res)
-				// 	})
-				// 	.catch((res) => {
-				// 		console.log(res)
-				// 	})
+				if (_this.couponCode && _this.couponCodeRight) {
+					data.coupon = _this.couponCode
+				} else {
+					delete data.coupon
+					_this.couponCode = Bus.couponCode = ''
+				}
+
+				axios({
+					url: API + '/addOrder',
+					method: 'POST',
+					params: data
+				})
+				.then((res) => {
+					if (res.data.state === 1) {
+						_this.$router.push({path: 'checkout', query: {contractId: _this.contractId}})
+					} else {
+						_this.msg = res.data.message
+						_this.active = true
+					}
+
+					_this.isSubmitting = false
+				})
+				.catch((res) => {
+					console.log(res)
+				})
 			}
 		},
 
 		mounted () {
 			document.title = '天气宝'
-			this.createDateList()
-			this.getCity()
 		}
 	}
 </script>

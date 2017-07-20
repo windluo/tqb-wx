@@ -2,27 +2,25 @@
   <div id="checkout" class="bill">
     <dl class="detail">
       <dt>保障城市</dt>
-      <dd>{{city}}</dd>
-      <dt>保障开始时间</dt>
-      <dd>{{start | date}}00:00</dd>
-      <dt>保障结束时间</dt>
-      <dd>{{end | date}}23:59</dd>
+      <dd>{{orderData.city}}</dd>
+      <dt>保障时间</dt>
+      <dd>{{orderData.dates | date}}</dd>
       <dt>补贴条件</dt>
       <dd>
-        <p>任意单日{{product.label}}>{{product.threshold}}mm</p>
-        <p><small>最终天气数据以{{city}}气象站（编号{{city_id}}）为准</small></p>
+         <p>任意单日温度>{{minTemp}}℃</p> 
+        <p><small>最终天气数据{{orderData.station}}</small></p>
       </dd>
       <dt>最大补贴红包</dt>
-      <dd>{{product.compensateRule * total_days}}元</dd>
+      <dd>{{orderData.maxPayout | priceConvert}}元</dd>
     </dl>
     <dl class="count">
       <dt>手机号</dt>
-      <dd><a href="javascript:void(0);" class="phone">{{mobile}}</a></dd>
+      <dd><a href="javascript:void(0);" class="phone">{{orderData.mobile}}</a></dd>
       <dt>保障售价</dt>
-      <dd class="price">{{product.price / 100}}元</dd>
+      <dd class="price">{{orderData.price | priceConvert}}元</dd>
       <dt>优惠码</dt>
-      <dd class="discount">-{{coupon / 100}}元</dd>
-      <dd class="final">实付：<span class="price">{{total}}元</span></dd>
+      <dd class="discount">{{orderData.coupon}}</dd>
+      <dd class="final">实付：<span class="price">{{(orderData.price-orderData.discountAmount) | priceConvert}}元</span></dd>
     </dl>
     <footer>
       <button @click="onSubmit" :disabled="isSubmitting" class="btn btn-block btn-primary">确认支付</button>
@@ -31,25 +29,37 @@
 </template>
 
 <script>
+  import Bus from '../libs/bus'
+  import axios from 'axios'
+  import '../libs/utils'
+
   export default {
     data () {
       return {
-        city: '深圳',
-        city_id: 'CN59493',
-        start: '20170310',
-        end: '20170310',
-        product: {},
-        total_days: 1,
+        contractId: '',
+        orderIsOk: false,
+        orderData: {},
+        minTemp: '',
         total: '',
-        mobile: '18526521454',
-        coupon: '',
         isSubmitting: false
       }
     },
 
     filters: {
       date (val) {
-        return val.substr(0, 4) + '年' + val.substr(4, 2) + '月' + val.substr(6, 2) + '日'
+        if (!val || val.length < 1) return
+
+        val = val.split(",")
+        let res = []
+        val.forEach((item) => {
+          res.push(item.substr(5, 5))
+        })
+
+        if (res.length <= 3) {
+          return res.join('、')
+        } else {
+          return res.join('、').substr(0, 17) + '...'
+        }
       }
     },
 
@@ -58,22 +68,125 @@
         if (this.isSubmitting) {
           return;
         }
+
+        this.isSubmitting = true
+        this.payWxWap()
+        // this.findOpenId()
+      },
+
+      checkOrder () {
         this.isSubmitting = true
 
-        let _this = this
-        setTimeout( () => {
-          _this.isSubmitting = false
-          _this.$router.push({path: '/receipt', query: {result: '1'}});
-        }, 2000)
+        axios({
+          url: API + '/checkOrder',
+          method: 'POST',
+          params: {
+            contractId: this.contractId
+          }
+        })
+        .then((res) => {
+          if (res.data.state === 1) {
+            this.orderIsOk = true
+            this.findOrder()
+          } else {
+            this.orderIsOk = false
+            alert(res.data.message)
+            this.$router.push("/")
+          }
+        })
+        .catch((res) => {
+          console.log(res)
+        })
+      },
+
+      findOrder () {
+        axios({
+          url: API + '/findOrder',
+          method: 'POST',
+          params: {
+            contractId: this.contractId
+          }
+        })
+        .then((res) => {
+          if (res.data.state === 1) {
+            this.orderData = res.data.data
+            this.minTemp = this.orderData.threshold.split(":")[0]
+            this.total = this.orderData.price - this.orderData.discountAmount
+          } else {
+            alert(res.data.message)
+          }
+
+          $("#loading-container").remove()
+          this.isSubmitting = false
+        })
+        .catch((res) => {
+          console.log(res)
+        })
+      },
+
+      findOpenId () {
+        if (!this.orderIsOk) return
+
+        axios({
+          url: wx + '/findOpenid',
+          method: 'POST'
+        })
+        .then((res) => {
+          if (res.data.openid) {
+            this.payWxWap(res.data.openid)
+          }
+        })
+        .catch((res) => {
+          console.log(res)
+        })
+      },
+
+      payWxWap(openid){
+        if (!this.orderIsOk) return
+
+        axios({
+          method: "GET",
+          url: wxpayAPI + "/jsapipay",
+          params: {
+            openid: 'opb1Ft61n4QEwe29QyorjApHAnO8',  //'opb1Ft61n4QEwe29QyorjApHAnO8'
+            totalFee: this.total,
+            outTradeNo: this.contractId,
+            body: "天气宝高温"
+          }
+        })
+        .then((res) => {
+          let url = 'http://pay.baotianqi.cn/wxpay/test'
+          this.onBridgeReady(res.data, url)
+
+          this.isSubmitting = false
+        })
+        .catch((res) => {
+          console.log(res)
+        })
+      },
+      
+      onBridgeReady(result, url) {
+        WeixinJSBridge.invoke("getBrandWCPayRequest", {
+          "appId": result.appId, // 公众号名称，由商户传入
+          "timeStamp": result.timeStamp, // 时间戳，自1970年以来的秒数
+          "nonceStr": result.nonceStr, // 随机串
+          "package": result.package,
+          "signType": result.signType, // 微信签名方式
+          "paySign": result.paySign // 微信签名
+        }, function(res) {
+          if (res.errMsg == "get_brand_wcpay_request：ok") {
+            // 使用以上方式判断前端返回,微信团队郑重提示：res.err_msg将在用户支付成功后返回ok，但并不保证它绝对可靠。
+            window.location.href = url;
+          }
+        })
       }
     },
 
     mounted () {
-      setTimeout( () => {
-        $("#loading-container").remove()
-      }, 3000)
-
       document.title = '确认订单'
+
+      this.contractId = this.$route.query.contractId
+      this.checkOrder()
     }
   }
 </script>
