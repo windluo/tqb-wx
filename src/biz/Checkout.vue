@@ -132,7 +132,7 @@
           method: 'POST'
         })
         .then((res) => {
-          alert(JSON.stringify(res.data))
+          alert("openid：" + JSON.stringify(res.data))
           if (res.data.openid) {
             this.payWxWap(res.data.openid)
           }
