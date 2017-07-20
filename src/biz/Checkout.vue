@@ -127,18 +127,25 @@
       findOpenId () {
         if (!this.orderIsOk) return
 
-        axios({
+        // axios({
+        //   url: wx + '/findOpenid',
+        //   method: 'POST'
+        // })
+        // .then((res) => {
+        //   alert("openid：" + JSON.stringify(res.data))
+        //   if (res.data.openid) {
+        //     this.payWxWap(res.data.openid)
+        //   }
+        // })
+        // .catch((res) => {
+        //   console.log(res)
+        // })
+        $.ajax({
           url: wx + '/findOpenid',
-          method: 'POST'
-        })
-        .then((res) => {
-          alert("openid：" + JSON.stringify(res.data))
-          if (res.data.openid) {
-            this.payWxWap(res.data.openid)
+          type: 'GET',
+          success (data) {
+            alert("openid来了：" + JSON.stringify(data))
           }
-        })
-        .catch((res) => {
-          console.log(res)
         })
       },
 
