@@ -45,24 +45,6 @@
       }
     },
 
-    filters: {
-      date (val) {
-        if (!val || val.length < 1) return
-
-        val = val.split(",")
-        let res = []
-        val.forEach((item) => {
-          res.push(item.substr(5, 5))
-        })
-
-        if (res.length <= 3) {
-          return res.join('、')
-        } else {
-          return res.join('、').substr(0, 17) + '...'
-        }
-      }
-    },
-
     methods: {
       onSubmit () {
         if (this.isSubmitting) {
@@ -127,25 +109,17 @@
       findOpenId () {
         if (!this.orderIsOk) return
 
-        // axios({
-        //   url: wx + '/findOpenid',
-        //   method: 'POST'
-        // })
-        // .then((res) => {
-        //   alert("openid：" + JSON.stringify(res.data))
-        //   if (res.data.openid) {
-        //     this.payWxWap(res.data.openid)
-        //   }
-        // })
-        // .catch((res) => {
-        //   console.log(res)
-        // })
-        $.ajax({
+        axios({
           url: wx + '/findOpenid',
-          type: 'GET',
-          success (data) {
-            alert("openid来了：" + JSON.stringify(data))
+          method: 'POST'
+        })
+        .then((res) => {
+          if (res.data.openid) {
+            this.payWxWap(res.data.openid)
           }
+        })
+        .catch((res) => {
+          console.log(res)
         })
       },
 
@@ -163,7 +137,7 @@
           }
         })
         .then((res) => {
-          let url = 'http://pay.baotianqi.cn/wxpay/test'
+          // let url = 'http://pay.baotianqi.cn/wxpay/test'
           this.onBridgeReady(res.data, url)
 
           this.isSubmitting = false
@@ -174,6 +148,8 @@
       },
       
       onBridgeReady(result, url) {
+        let _this = this
+
         WeixinJSBridge.invoke("getBrandWCPayRequest", {
           "appId": result.appId, // 公众号名称，由商户传入
           "timeStamp": result.timeStamp, // 时间戳，自1970年以来的秒数
@@ -184,7 +160,8 @@
         }, function(res) {
           if (res.errMsg == "get_brand_wcpay_request：ok") {
             // 使用以上方式判断前端返回,微信团队郑重提示：res.err_msg将在用户支付成功后返回ok，但并不保证它绝对可靠。
-            window.location.href = url;
+            // window.location.href = url;
+            _this.$router.push({path: '/receipt', query: {contractId: _this.contractId}})
           }
         })
       }
