@@ -33,9 +33,9 @@
       <dt>订单金额</dt>
       <dd>{{receiptData.price | priceConvert}}元</dd>
       <dt>保障金额</dt>
-      <dd>每日赔付元，共计元</dd>
+      <dd>每日赔付上限{{receiptData.maxPayout | priceConvert}}元</dd>
       <dt>补贴条件</dt>
-      <dd>任意单日温度>{{minTemp}}mm</dd>
+      <dd>任意单日温度>{{minTemp}}℃</dd>
       <dt>手机号</dt>
       <dd><a href="javascript:void(0);" class="phone">{{receiptData.mobile}}</a></dd>
       <dt>站点信息</dt>

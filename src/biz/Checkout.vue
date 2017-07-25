@@ -19,7 +19,7 @@
       <dt>保障售价</dt>
       <dd class="price">{{orderData.price | priceConvert}}元</dd>
       <dt>优惠码</dt>
-      <dd class="discount">{{orderData.coupon}}</dd>
+      <dd class="discount">{{orderData.coupons}}</dd>
       <dd class="final">实付：<span class="price">{{(orderData.price-orderData.discountAmount) | priceConvert}}元</span></dd>
     </dl>
     <footer>
@@ -52,8 +52,8 @@
         }
 
         this.isSubmitting = true
-        // this.payWxWap()
-        this.findOpenId()
+        this.payWxWap()
+        // this.findOpenId()
       },
 
       checkOrder () {
@@ -106,40 +106,22 @@
         })
       },
 
-      findOpenId () {
+      payWxWap(){
         if (!this.orderIsOk) return
 
         axios({
-          url: wx + '/findOpenid',
-          method: 'POST'
-        })
-        .then((res) => {
-          alert("openid：" + JSON.stringify(res.data))
-          if (res.data.openid) {
-            this.payWxWap(res.data.openid)
-          }
-        })
-        .catch((res) => {
-          console.log(res)
-        })
-      },
-
-      payWxWap(openid){
-        if (!this.orderIsOk) return
-
-        axios({
-          method: "GET",
-          url: wxpayAPI + "/jsapipay",
+          method: "POST",
+          url: toWxpay,
           params: {
-            openid: openid,  //'opb1Ft61n4QEwe29QyorjApHAnO8'
             totalFee: this.total,
             outTradeNo: this.contractId,
-            body: "天气宝高温"
+            body: "高温保障",
+            rUrl: encodeURIComponent('http://pay.baotianqi.cn/wxpay/wxpaysuccess/')
           }
         })
         .then((res) => {
           // let url = 'http://pay.baotianqi.cn/wxpay/test'
-          this.onBridgeReady(res.data, url)
+          // this.onBridgeReady(res.data)
 
           this.isSubmitting = false
         })
@@ -148,7 +130,7 @@
         })
       },
       
-      onBridgeReady(result, url) {
+      onBridgeReady(result) {
         let _this = this
 
         WeixinJSBridge.invoke("getBrandWCPayRequest", {

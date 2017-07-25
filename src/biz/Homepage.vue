@@ -244,18 +244,17 @@
 				// }
 
 				this.isSubmitting = true
-				let _this = this
 				let data = {
-					contractId: _this.contractId,
-					payFee: _this.total,
-					mobile: _this.mobile
+					contractId: this.contractId,
+					payFee: this.total,
+					mobile: this.mobile
 				}
 
-				if (_this.couponCode && _this.couponCodeRight) {
-					data.coupon = _this.couponCode
+				if (this.couponCode && this.couponCodeRight) {
+					data.coupon = this.couponCode
 				} else {
 					delete data.coupon
-					_this.couponCode = Bus.couponCode = ''
+					this.couponCode = Bus.couponCode = ''
 				}
 
 				axios({
@@ -265,13 +264,18 @@
 				})
 				.then((res) => {
 					if (res.data.state === 1) {
-						_this.$router.push({path: 'checkout', query: {contractId: _this.contractId}})
+						this.$router.push({
+							path: 'checkout',
+							query: {
+								contractId: this.contractId
+							}
+						})
 					} else {
-						_this.msg = res.data.message
-						_this.active = true
+						this.msg = res.data.message
+						this.active = true
 					}
 
-					_this.isSubmitting = false
+					this.isSubmitting = false
 				})
 				.catch((res) => {
 					console.log(res)

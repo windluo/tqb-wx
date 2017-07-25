@@ -23,9 +23,9 @@ let config = Object.assign({}, baseConfig, {
         new webpack.optimize.DedupePlugin(),
         new webpack.DefinePlugin({
             // 'process.env.NODE_ENV': '"production"'
-            API: JSON.stringify('http://server.baotianqi.cn/selfTemp/'),
+            API: JSON.stringify(' http://ts.baotianqi.cn/selfTemp/'),
             wxpayAPI: JSON.stringify('http://pay.baotianqi.cn/wxpay'),
-            wx: JSON.stringify('http://m.baotianqi.cn/wx')
+            toWxpay: JSON.stringify('http://m.baotianqi.cn/self/toWxpay')
         }),
         new BowerWebpackPlugin({
             searchResolveModulesDirectories: false
