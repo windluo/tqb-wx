@@ -52,7 +52,15 @@
         }
 
         this.isSubmitting = true
-        this.payWxWap()
+        // this.payWxWap()
+        let rUrl = encodeURIComponent('http://app.baotianqi.cn/selftemp/#/receipt?contractId=' + this.contractId)
+        let url = 'http://m.baotianqi.cn/self/toWxpay?'
+                  + 'outTradeNo=' + this.contractId
+                  + '&totalFee=' + this.total
+                  + '&body=temp'
+                  + '&rUrl=' + rUrl
+
+        window.location.href = url
         // this.findOpenId()
       },
 
@@ -115,7 +123,7 @@
           params: {
             totalFee: this.total,
             outTradeNo: this.contractId,
-            body: "高温保障",
+            body: "temp",
             rUrl: encodeURIComponent('http://pay.baotianqi.cn/wxpay/wxpaysuccess/')
           }
         })

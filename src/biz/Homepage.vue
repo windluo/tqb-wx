@@ -264,12 +264,21 @@
 				})
 				.then((res) => {
 					if (res.data.state === 1) {
-						this.$router.push({
-							path: 'checkout',
-							query: {
-								contractId: this.contractId
-							}
-						})
+						if (this.total <= 0) {
+							this.$router.push({
+								path: 'receipt',
+								query: {
+									contractId: this.contractId
+								}
+							})
+						} else {
+							this.$router.push({
+								path: 'checkout',
+								query: {
+									contractId: this.contractId
+								}
+							})
+						}
 					} else {
 						this.msg = res.data.message
 						this.active = true
