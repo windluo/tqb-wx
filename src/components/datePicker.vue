@@ -93,6 +93,7 @@
 	#datepicker{
 		.date-header{
 			position: relative;
+			margin-top: 0.6rem;
 			.calendar{
 				display: inline-block;
 				width: 1.2rem;

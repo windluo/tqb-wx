@@ -3,12 +3,16 @@
     <dl class="detail">
       <dt>保障城市</dt>
       <dd>{{orderData.city}}</dd>
-      <dt>保障时间</dt>
-      <dd>{{orderData.dates | date}}</dd>
+      <dt>保障日期</dt>
+      <dd>
+        <div class="date-det">
+          {{orderData.dates | date}}
+        </div>
+      </dd>
       <dt>补贴条件</dt>
       <dd>
          <p>任意单日温度>{{minTemp}}℃</p> 
-        <p><small>最终天气数据{{orderData.station}}</small></p>
+        <p class="text-nowrap"><small>最终天气数据{{orderData.station}}</small></p>
       </dd>
       <dt>最大补贴红包</dt>
       <dd>{{orderData.maxPayout | priceConvert}}元</dd>
@@ -18,9 +22,9 @@
       <dd><a href="javascript:void(0);" class="phone">{{orderData.mobile}}</a></dd>
       <dt>保障售价</dt>
       <dd class="price">{{orderData.price | priceConvert}}元</dd>
-      <dt>优惠码</dt>
-      <dd class="discount">{{orderData.coupons}}</dd>
-      <dd class="final">实付：<span class="price">{{(orderData.price-orderData.discountAmount) | priceConvert}}元</span></dd>
+      <dt>优惠金额</dt>
+      <dd class="discount">{{orderData.discountAmount | priceConvert}}元</dd>
+      <dd class="final">实付：<span class="price">{{(orderData.price-orderData.discountAmount) | makeGtEtZero | priceConvert}}元</span></dd>
     </dl>
     <footer>
       <button @click="onSubmit" :disabled="isSubmitting" class="btn btn-block btn-primary">确认支付</button>
@@ -52,16 +56,64 @@
         }
 
         this.isSubmitting = true
-        // this.payWxWap()
-        let rUrl = encodeURIComponent('http://app.baotianqi.cn/selftemp/#/receipt?contractId=' + this.contractId)
-        let url = 'http://m.baotianqi.cn/self/toWxpay?'
-                  + 'outTradeNo=' + this.contractId
-                  + '&totalFee=' + this.total
-                  + '&body=temp'
-                  + '&rUrl=' + rUrl
+        //确认支付，先提交订单，再去支付
+        this.addOrder()
+      },
 
-        window.location.href = url
-        // this.findOpenId()
+      addOrder () {
+        axios({
+          url: API + '/addOrder',
+          method: 'POST',
+          params: {
+            contractId: this.contractId,
+            payFee: (this.total < 0) ? 0 : this.total
+          }
+        })
+        .then((res) => {
+          if (res.data.state === 1) {
+            if (this.total <=0 ) {
+              this.$router.push({
+                path: 'receipt',
+                query: {
+                  contractId: this.contractId
+                }
+              })
+            } else {
+              let rUrl = encodeURIComponent('http://app.baotianqi.cn/selftemp/#/receipt?contractId=' + this.contractId)
+              let url = ''
+
+              if (this.isWeixin()) {
+                url = 'http://m.baotianqi.cn/self/toWxpay?'
+              } else {
+                url = 'http://pay.baotianqi.cn/alipay/pay?'
+              }
+              
+              let target = url
+                        + 'outTradeNo=' + this.contractId
+                        + '&totalFee=' + this.total
+                        + '&body=temp'
+                        + '&rUrl=' + rUrl
+
+              window.location.href = target
+            }
+          } else {
+            alert(res.data.message)
+          }
+
+          this.isSubmitting = false
+        })
+        .catch((res) => {
+          console.log(res)
+        })
+      },
+
+      isWeixin () {
+        var ua = window.navigator.userAgent.toLowerCase()
+        if(ua.match(/MicroMessenger/i) == 'micromessenger'){ 
+          return true
+        }
+
+        return false
       },
 
       checkOrder () {
@@ -77,7 +129,7 @@
         .then((res) => {
           if (res.data.state === 1) {
             this.orderIsOk = true
-            this.findOrder()
+            this.findContracCache()
           } else {
             this.orderIsOk = false
             alert(res.data.message)
@@ -89,9 +141,9 @@
         })
       },
 
-      findOrder () {
+      findContracCache () {
         axios({
-          url: API + '/findOrder',
+          url: API + '/findContracCache',
           method: 'POST',
           params: {
             contractId: this.contractId
@@ -112,49 +164,6 @@
         .catch((res) => {
           console.log(res)
         })
-      },
-
-      payWxWap(){
-        if (!this.orderIsOk) return
-
-        axios({
-          method: "POST",
-          url: toWxpay,
-          params: {
-            totalFee: this.total,
-            outTradeNo: this.contractId,
-            body: "temp",
-            rUrl: encodeURIComponent('http://pay.baotianqi.cn/wxpay/wxpaysuccess/')
-          }
-        })
-        .then((res) => {
-          // let url = 'http://pay.baotianqi.cn/wxpay/test'
-          // this.onBridgeReady(res.data)
-
-          this.isSubmitting = false
-        })
-        .catch((res) => {
-          console.log(res)
-        })
-      },
-      
-      onBridgeReady(result) {
-        let _this = this
-
-        WeixinJSBridge.invoke("getBrandWCPayRequest", {
-          "appId": result.appId, // 公众号名称，由商户传入
-          "timeStamp": result.timeStamp, // 时间戳，自1970年以来的秒数
-          "nonceStr": result.nonceStr, // 随机串
-          "package": result.package,
-          "signType": result.signType, // 微信签名方式
-          "paySign": result.paySign // 微信签名
-        }, function(res) {
-          if (res.errMsg == "get_brand_wcpay_request：ok") {
-            // 使用以上方式判断前端返回,微信团队郑重提示：res.err_msg将在用户支付成功后返回ok，但并不保证它绝对可靠。
-            // window.location.href = url;
-            _this.$router.push({path: '/receipt', query: {contractId: _this.contractId}})
-          }
-        })
       }
     },
 
@@ -169,6 +178,11 @@
 
 <style lang="less">
   #checkout{
+    .date-det{
+      line-height: 1.5;
+      margin-top: 0.6rem;
+      margin-bottom: 0.6rem;
+    }
     .detail{
       position: relative;
 

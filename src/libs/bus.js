@@ -10,6 +10,7 @@ let bus = new Vue({
       total: 0,
       price: 0,
       couponPrice: 0,
+      couponCodeRight: false,
       isFetching: true,
       contractId: '',
       levels: [{}],
@@ -85,6 +86,17 @@ let bus = new Vue({
     },
 
     findContract () {
+      // 日期变更会触发本方法，但若日期为空时，其实不需要发送请求
+      if (!this.checkedDateList || !this.checkedDateList.length) {
+        // 重置默认值（参考原成功回调处理逻辑）
+        this.price = 0;
+        this.total = 0;
+        this.contractId = '';
+        this.levels = this.initData.contract.levels = [{}];
+
+        return;
+      }
+
       this.isFetching = true
       let _this = this
       axios({

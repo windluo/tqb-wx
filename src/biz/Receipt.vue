@@ -28,8 +28,12 @@
     <dl>
       <dt>保障城市</dt>
       <dd>{{receiptData.city}}</dd>
-      <dt>保障时间</dt>
-      <dd>{{receiptData.dates | date}}</dd>
+      <dt>保障日期</dt>
+      <dd>
+        <div class="date-det">
+          {{receiptData.dates | date}}
+        </div>
+      </dd>
       <dt>订单金额</dt>
       <dd>{{receiptData.price | priceConvert}}元</dd>
       <dt>保障金额</dt>
@@ -71,12 +75,12 @@
         this.isShare = false
       },
 
-      checkOrder () {
+      findContracCache () {
         let id = this.$route.query.contractId
         if (!id) return
 
         axios({
-          url: API + '/findOrder',
+          url: API + '/findContracCache',
           method: 'POST',
           params: {
             contractId: id
@@ -104,13 +108,19 @@
     },
 
     mounted () {
-      this.checkOrder()
+      this.findContracCache()
     }
   }
 </script>
 
 <style lang="less">
   #receipt{
+    .date-det{
+      line-height: 1.5;
+      margin-top: 0.6rem;
+      margin-bottom: 0.6rem;
+    }
+
     header {
       text-align: center;
     }

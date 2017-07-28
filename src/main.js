@@ -1,11 +1,13 @@
 import Vue from 'vue'
 import VueRouter from 'vue-router'
 import loading from './components/loading'
+import shareImg from './components/shareImg'
 import home from './biz/Homepage.vue'
 import checkout from './biz/Checkout.vue'
 import receipt from './biz/receipt.vue'
 import faq from './biz/Faq.vue'
 import Bus from './libs/bus.js'
+import wxshare from './libs/wxshare'
 
 import "./css/comm.css"
 import 'tqb-component-city-picker/build/css/tqb-city-picker.min.css'
@@ -46,7 +48,7 @@ new Vue({
 		transitionName: ''
 	},
 	components: {
-		loading
+		loading, shareImg
 	},
 	watch: {
 		'$route' (to, from) {
@@ -68,3 +70,13 @@ new Vue({
 }).$mount('#app')
 
 Bus.getInitData()
+
+/*微信分享*/
+let share = {
+	title: '天热？就领高温补贴',
+	desc: '气温超过阈值，现金自动到账。',
+	// link: 'http://app.baotianqi.cn/selftemp/#/',
+	link: 'http://m.baotianqi.cn/self/index',
+	imgUrl: 'http://app.baotianqi.cn/selftemp/images/share_img_8ef5b79b28f98530335262978cf2d3f5.jpg'
+}
+wxshare.getTicket(share)

@@ -317,3 +317,8 @@ li{
 .bill .final {
 	font-size: 16px
 }
+
+/* 原子类 */
+.text-nowrap {
+	white-space: nowrap;
+}

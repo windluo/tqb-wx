@@ -30,7 +30,7 @@
     },
 
     mounted () {
-      this.checkLoading()
+      // this.checkLoading()
     }
   }
 </script>

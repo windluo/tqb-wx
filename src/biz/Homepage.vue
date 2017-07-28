@@ -40,7 +40,7 @@
         <label class="required" for="mobile"></label>
       </div>
 			<div class="form-group">
-        <input type="text" name="couponCode" class="form-control" placeholder="优惠码，可不填~" @keyup="findCoupons" id="couponCode" v-model="couponCode">
+        <input type="text" name="couponCode" class="form-control" placeholder="优惠码，可不填~" id="couponCode" v-model="couponCode">
         <label class="tips" for="couponCode">{{couponStr}}</label>
       </div>
     </form>
@@ -77,14 +77,13 @@
 				api: API,
 				mobile: Bus.mobile,
 				couponCode: Bus.couponCode,
-				couponCodeRight: false,
-				couponStr: '',
+				couponCodeRight: Bus.couponCodeRight,
 				isSubmitting: false,
 				checkedDateList: Bus.checkedDateList,
 				active: false,
 				msg: '',
 				subsidyList: [],
-				headerIMG: require('../images/header.jpg'),
+				headerIMG: require('../images/header.png'),
 				introIMG: require('../images/intro.jpg')
 			}
 		},
@@ -118,6 +117,10 @@
 				return Bus.total
 			},
 
+			couponStr () {
+				return Bus.couponStr
+			},
+
 			couponPrice () {
 				return Bus.couponPrice
 			},
@@ -133,7 +136,12 @@
 			},
 
 			couponCode (val, oldval) {
-				Bus.couponCode = val
+				this.couponCode = Bus.couponCode = val
+				this.findCoupons()
+			},
+
+			couponCodeRight (val, oldval) {
+				Bus.couponCodeRight = val
 			}
 		},
 
@@ -149,9 +157,9 @@
 				this.city_id = Bus.initData.defaultCityId = event.target.value
 				Bus.findContract()
 
-				zhuge.track('city', {
-					id: event.target.value
-				});
+				// zhuge.track('city', {
+				// 	id: event.target.value
+				// });
 			},
 
 			onDateChange (date) {
@@ -160,6 +168,13 @@
 			},
 
 			findCoupons () {
+				// 如果输入的是空格，则去掉文本中的空格，并且不发送请求
+				let cutSpaceCouponCode = this.couponCode.replace(/\s/g, '');
+				if (this.couponCode != cutSpaceCouponCode) {
+					this.couponCode = Bus.couponCode = cutSpaceCouponCode;
+					return;
+				}
+
 				if (!this.mobile) {
 					this.msg = '请填写手机号码'
 					this.active = true
@@ -175,6 +190,9 @@
 				}
 
 				if (this.couponCode.length < 5) {
+					this.couponCodeRight = false
+					Bus.total = Bus.price
+					Bus.couponStr = '优惠码无效'
 					return
 				}
 
@@ -188,23 +206,18 @@
 				})
 				.then((res) => {
 					if (res.data.state === 1) {
-						console.log(res.data.data)
 						Bus.couponPrice = res.data.data
-						this.couponStr = `优惠码有效，立减${(Bus.couponPrice/100).toFixed(2)}元`
+						Bus.couponStr = `优惠码有效，立减${(Bus.couponPrice/100).toFixed(2)}元`
 						Bus.total -= Bus.couponPrice
-						this.couponCodeRight = true
+						this.couponCodeRight = Bus.couponCodeRight = true
 					} else {
-						this.couponStr = `优惠码无效`
-						this.couponCodeRight = false
+						Bus.couponStr = `优惠码无效`
+						this.couponCodeRight = Bus.couponCodeRight = false
 						Bus.total += Bus.couponPrice
 						Bus.couponPrice = 0
 					}
 				})
 				.catch((res) => {
-					this.couponStr = `优惠码无效`
-					this.couponCodeRight = false
-					Bus.total += Bus.couponPrice
-					Bus.couponPrice = 0
 					console.log(res)
 				})
 			},
@@ -212,6 +225,66 @@
 			onBombBoxChange () {
 				this.active = false
 				this.msg = ''
+			},
+
+			checkOrder () {
+				axios({
+					url: API + '/checkOrder',
+					method: 'POST',
+					params: {
+						contractId: this.contractId
+					}
+				})
+				.then((res) => {
+					if (res.data.state === 1) {
+						// 订单有效
+						this.addCustomer()
+					} else {
+						alert(res.data.message)
+						Bus.findContract()
+					}
+				})
+				.catch((res) => {
+					console.log(res)
+				})
+			},
+
+			addCustomer () {
+				let data = {
+					contractId: this.contractId,
+					payFee: this.total,
+					mobile: this.mobile
+				}
+				
+				if (this.couponCode && this.couponCodeRight) {
+					data.coupon = this.couponCode
+				} else {
+					delete data.coupon
+				}
+
+				axios({
+					url: API + '/addCustomer',
+					method: 'POST',
+					params: data
+				})
+				.then((res) => {
+					if (res.data.state === 1) {
+						this.$router.push({
+							path: 'checkout',
+							query: {
+								contractId: this.contractId
+							}
+						})
+					}
+					else {
+						alert(res.data.message)
+					}
+
+					this.isSubmitting = false
+				})
+				.catch((res) => {
+					console.log(res)
+				})
 			},
 
 			checkout () {
@@ -244,51 +317,7 @@
 				// }
 
 				this.isSubmitting = true
-				let data = {
-					contractId: this.contractId,
-					payFee: this.total,
-					mobile: this.mobile
-				}
-
-				if (this.couponCode && this.couponCodeRight) {
-					data.coupon = this.couponCode
-				} else {
-					delete data.coupon
-					this.couponCode = Bus.couponCode = ''
-				}
-
-				axios({
-					url: API + '/addOrder',
-					method: 'POST',
-					params: data
-				})
-				.then((res) => {
-					if (res.data.state === 1) {
-						if (this.total <= 0) {
-							this.$router.push({
-								path: 'receipt',
-								query: {
-									contractId: this.contractId
-								}
-							})
-						} else {
-							this.$router.push({
-								path: 'checkout',
-								query: {
-									contractId: this.contractId
-								}
-							})
-						}
-					} else {
-						this.msg = res.data.message
-						this.active = true
-					}
-
-					this.isSubmitting = false
-				})
-				.catch((res) => {
-					console.log(res)
-				})
+				this.checkOrder()
 			}
 		},
 
@@ -300,6 +329,10 @@
 
 <style lang="less">
 	#homepage{
+		.tqb-city-picker-label {
+			display: inline;
+		}
+
 		.homepage-banner {
 			position: absolute;
 			height: 15rem;

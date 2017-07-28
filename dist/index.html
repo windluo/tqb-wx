@@ -15,9 +15,10 @@
   <meta name="renderer" content="webkit">
   <meta name="viewport" content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=0">
   <meta name="wap-font-scale" content="no">
-<link href="./css/main-5b12199b.css" rel="stylesheet"></head>
+<link href="./css/main-5b6b3366.css" rel="stylesheet"></head>
 <body>
 	<div id="app">
+		<share-img></share-img>
 		<loading></loading>
 		<transition :name="transitionName">
       <router-view></router-view>
@@ -25,20 +26,9 @@
 	</div>
 
 	<script src="http://m.baotianqi.cn/static/js/jquery-3.1.0.min.js"></script>
-	
+	<script src="http://res.wx.qq.com/open/js/jweixin-1.2.0.js"></script> 
 
-	<script type="text/javascript">
-		window.zhuge = window.zhuge || [];window.zhuge.methods = "_init debug identify track trackLink trackForm page".split(" ");
-		window.zhuge.factory = function(b) {return function() {var a = Array.prototype.slice.call(arguments);a.unshift(b);
-			window.zhuge.push(a);return window.zhuge;}};for (var i = 0; i < window.zhuge.methods.length; i++) {
-			var key = window.zhuge.methods[i];window.zhuge[key] = window.zhuge.factory(key);}window.zhuge.load = function(b, x) {
-			if (!document.getElementById("zhuge-js")) {var a = document.createElement("script");var verDate = new Date();
-				var verStr = verDate.getFullYear().toString()+ verDate.getMonth().toString() + verDate.getDate().toString();
-				a.type = "text/javascript";a.id = "zhuge-js";a.async = !0;a.src = (location.protocol == 'http:' ? "http://sdk.zhugeio.com/zhuge.min.js?v=" : 'https://zgsdk.zhugeio.com/zhuge.min.js?v=') + verStr;
-				a.onerror = function(){window.zhuge.identify = window.zhuge.track = function(ename, props, callback){if(callback && Object.prototype.toString.call(callback) === '[object Function]')callback();};};
-				var c = document.getElementsByTagName("script")[0];c.parentNode.insertBefore(a, c);window.zhuge._init(b, x)}};
-		window.zhuge.load('e1b7495c0ea04570b533da4269d3245f');//配置应用的AppKey
-	</script>
+	
 	<script>
 		var _mtac = {};
 		(function() {
@@ -50,5 +40,5 @@
 			s.parentNode.insertBefore(mta, s);
 		})();
 	</script>
-<script type="text/javascript" src="./bundle/vendor-dcbeb9ae.js"></script><script type="text/javascript" src="./bundle/main-34e96a5d.js"></script></body>
+<script type="text/javascript" src="./bundle/vendor-074f6e16.js"></script><script type="text/javascript" src="./bundle/main-fcad33f8.js"></script></body>
 </html>
