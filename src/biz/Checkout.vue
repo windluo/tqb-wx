@@ -81,17 +81,41 @@
             } else {
               let rUrl = encodeURIComponent('http://app.baotianqi.cn/selftemp/#/receipt?contractId=' + this.contractId)
               let url = ''
+              let payfee = 0
+              let body = ''
 
               if (this.isWeixin()) {
                 url = 'http://m.baotianqi.cn/self/toWxpay?'
+                payfee = this.total
+                body = 'temp'
               } else {
                 url = 'http://pay.baotianqi.cn/alipay/pay?'
+                payfee = (this.total / 100).toFixed(2)
+                body = encodeURIComponent('高温保障')
+
+                // this.isSubmitting = true
+                // axios({
+                //   url: 'http://pay.baotianqi.cn/alipay/pay',
+                //   method: 'POST',
+                //   params: {
+                //     body: body,
+                //     outTradeNo: this.contractId,
+                //     totalFee: payfee,
+                //     rUrl: rUrl
+                //   }
+                // })
+                // .then((res) => {
+                //   this.isSubmitting = false
+                // })
+                // .catch((res) => {
+                //   console.log(res)
+                // })
               }
-              
+
               let target = url
                         + 'outTradeNo=' + this.contractId
-                        + '&totalFee=' + this.total
-                        + '&body=temp'
+                        + '&totalFee=' + payfee
+                        + '&body=' + body
                         + '&rUrl=' + rUrl
 
               window.location.href = target

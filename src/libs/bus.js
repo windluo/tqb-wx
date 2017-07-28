@@ -23,19 +23,17 @@ let bus = new Vue({
 
   methods: {
     getInitData () {
-      let _this = this
-
       axios({
         url: API + '/initData',
         method: 'POST'
       })
       .then((res) => {
         if (res.data.state === 1) {
-          _this.initData = res.data.data
-          _this.contractId = _this.initData.contract.contractId
-          _this.levels = _this.initData.contract.levels
-          _this.total = _this.initData.contract.price
-          _this.getDateList()
+          this.initData = res.data.data
+          this.contractId = this.initData.contract.contractId
+          this.levels = this.initData.contract.levels
+          this.total = this.initData.contract.price
+          this.getDateList()
         } else {
           alert(data.message)
         }
@@ -98,31 +96,30 @@ let bus = new Vue({
       }
 
       this.isFetching = true
-      let _this = this
       axios({
         url: API + '/findContract',
         method: 'POST',
         params: {
-          cityId: _this.initData.defaultCityId,
-          dates: _this.checkedDateList.join(',')
+          cityId: this.initData.defaultCityId,
+          dates: this.checkedDateList.join(',')
         }
       })
       .then((res) => {
         let data = res.data
         if (data.state === 1) {
-          _this.price = data.data.price
-          _this.contractId = data.data.contractId
-          _this.total = data.data.price - _this.couponPrice
-          _this.levels = _this.initData.contract.levels = data.data.levels
+          this.price = data.data.price
+          this.contractId = data.data.contractId
+          this.total = data.data.price - this.couponPrice
+          this.levels = this.initData.contract.levels = data.data.levels
         } else {
           alert(data.message)
         }
         
         $("#loading-container").remove()
-        _this.isFetching = false
+        this.isFetching = false
       })
       .catch((res) => {
-        _this.isFetching = false
+        this.isFetching = false
       })
     },
 

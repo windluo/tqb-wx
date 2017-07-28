@@ -169,10 +169,10 @@
 
 			findCoupons () {
 				// 如果输入的是空格，则去掉文本中的空格，并且不发送请求
-				let cutSpaceCouponCode = this.couponCode.replace(/\s/g, '');
+				let cutSpaceCouponCode = this.couponCode.replace(/\s/g, '')
 				if (this.couponCode != cutSpaceCouponCode) {
-					this.couponCode = Bus.couponCode = cutSpaceCouponCode;
-					return;
+					this.couponCode = Bus.couponCode = cutSpaceCouponCode
+					return
 				}
 
 				if (!this.mobile) {
@@ -208,12 +208,12 @@
 					if (res.data.state === 1) {
 						Bus.couponPrice = res.data.data
 						Bus.couponStr = `优惠码有效，立减${(Bus.couponPrice/100).toFixed(2)}元`
-						Bus.total -= Bus.couponPrice
+						Bus.total = Bus.price - Bus.couponPrice
 						this.couponCodeRight = Bus.couponCodeRight = true
 					} else {
 						Bus.couponStr = `优惠码无效`
 						this.couponCodeRight = Bus.couponCodeRight = false
-						Bus.total += Bus.couponPrice
+						Bus.total = Bus.price
 						Bus.couponPrice = 0
 					}
 				})
@@ -242,6 +242,7 @@
 					} else {
 						alert(res.data.message)
 						Bus.findContract()
+						this.isSubmitting = false
 					}
 				})
 				.catch((res) => {
